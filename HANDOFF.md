@@ -31,8 +31,16 @@ Files currently present:
 - `app/globals.css`
 - `node_modules/`
 - `.next/` from the successful production build
+- `.gitignore`
+- `.githooks/post-commit`
 
-This is not a git repository.
+This is now a Git repository on branch `main`, connected to GitHub:
+
+```text
+https://github.com/marciteichman/menu-app
+```
+
+The local branch tracks `origin/main`.
 
 ## Implemented App Behavior
 
@@ -172,7 +180,81 @@ npm run dev
 
 If sandbox blocks binding again, request approval to run `npm run dev`.
 
-## User Instruction Before Handoff
+## Git / GitHub Versioning
+
+The project has been initialized as a Git repository and pushed to GitHub.
+
+Current GitHub remote:
+
+```bash
+git remote -v
+```
+
+Expected remote:
+
+```text
+origin  https://github.com/marciteichman/menu-app.git (fetch)
+origin  https://github.com/marciteichman/menu-app.git (push)
+```
+
+An auto-push Git hook is installed:
+
+```text
+.githooks/post-commit
+```
+
+The repo is configured locally with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Behavior: whenever a commit is created on `main`, the hook automatically runs:
+
+```bash
+git push
+```
+
+Important: GitHub only receives committed changes. Future sessions should make a commit after meaningful edits. The push should happen automatically after commit. If the auto-push fails because of authentication, ask the user to run `git push` in their own Terminal.
+
+Useful commands for future sessions:
+
+```bash
+git status --short --branch
+git add .
+git commit -m "Describe the change"
+```
+
+Because of the auto-push hook, the commit should push to GitHub by itself.
+
+Recent commits:
+
+```text
+7ce3454 Add auto-push Git hook
+6707fb4 Initial commit
+```
+
+## New Session Prompt
+
+Use this prompt to resume work in a new Codex session:
+
+```text
+We are working in /Users/marciteichman/Desktop/Menu App on a Next.js/React/TypeScript kids breakfast visual menu app. Read HANDOFF.md first and continue from there.
+
+Important GitHub setup:
+- The repo is already initialized on branch main.
+- GitHub remote is https://github.com/marciteichman/menu-app.git.
+- main tracks origin/main.
+- .githooks/post-commit is configured via git config core.hooksPath .githooks.
+- After each meaningful change, commit it. The post-commit hook should automatically push to GitHub.
+- Before edits, check git status. Do not overwrite unrelated user changes.
+
+User preference: keep the work non-technical and explain steps plainly. The user wants code versioned in GitHub by default and does not want to keep asking about it.
+
+Next likely task: continue improving/testing the breakfast menu app. Start by checking git status, reading the app files, and running the dev server or build as appropriate.
+```
+
+## Previous User Instruction Before Handoff
 
 The user explicitly said:
 
@@ -180,7 +262,7 @@ The user explicitly said:
 stop what you're doing and create a file wiht the context it in it for a new session to pickup
 ```
 
-So no further verification was performed after this file was created.
+That instruction came before Git/GitHub setup was completed. Since then, Git has been initialized, the repo has been pushed to GitHub, and an auto-push post-commit hook has been added and verified.
 
 ## Recommended Next Steps
 
@@ -213,4 +295,3 @@ So no further verification was performed after this file was created.
    - Confirm browser console has no runtime errors.
 
 5. Audit can be run later if desired. The user specifically asked to skip audit for now.
-
