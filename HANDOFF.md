@@ -58,9 +58,12 @@ The local branch tracks `origin/main`.
 - No visible food labels on cards.
 - Useful image alt text.
 - Wikimedia Commons image search from the browser.
+- Single-item image search rules to prefer one food item instead of store, market, tray, pile, or group images.
 - Generic search mapping for:
-  - `Cheerios` -> `cereal bowl food`
-  - `apple` / `apples` -> `apple fruit food`
+  - `Cheerios` -> `cereal bowl close up food`
+  - `apple` / `apples` -> `single apple fruit food`
+  - `mango` / `mangoes` -> `single mango fruit food`
+  - most other foods -> `single [food] food`
 - Image results cached in `localStorage`.
 - Recent foods saved in `localStorage`.
 - Recent food chips below the input.
@@ -89,6 +92,7 @@ Shared menu helper behavior now lives in `app/menu-utils.ts` and is covered by `
 - `normalizeFoodName`
 - `parseFoods`
 - `getSearchTerm`
+- `isLikelySingleFoodImage`
 - `getFallbackEmoji`
 - `shuffleItems`
 - `mergeRecentFoods`

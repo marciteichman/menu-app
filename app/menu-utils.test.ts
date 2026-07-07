@@ -3,6 +3,7 @@ import {
   getFallbackEmoji,
   getNextImageUrl,
   getSearchTerm,
+  isLikelySingleFoodImage,
   mergeRecentFoods,
   parseFoods
 } from "./menu-utils";
@@ -33,12 +34,13 @@ describe("mergeRecentFoods", () => {
 
 describe("getSearchTerm", () => {
   it("uses friendlier search terms for foods that need them", () => {
-    expect(getSearchTerm("Cheerios")).toBe("cereal bowl food");
-    expect(getSearchTerm("apples")).toBe("apple fruit food");
+    expect(getSearchTerm("Cheerios")).toBe("cereal bowl close up food");
+    expect(getSearchTerm("apples")).toBe("single apple fruit food");
   });
 
-  it("adds a food keyword for general searches", () => {
-    expect(getSearchTerm("sliced mango")).toBe("sliced mango food");
+  it("asks for a single food item in general searches", () => {
+    expect(getSearchTerm("sliced mango")).toBe("single sliced mango food");
+    expect(getSearchTerm("bagels")).toBe("single bagel food");
   });
 });
 
@@ -68,5 +70,44 @@ describe("getFallbackEmoji", () => {
   it("uses known food emojis and falls back for unknown foods", () => {
     expect(getFallbackEmoji("banana slices")).toBe("🍌");
     expect(getFallbackEmoji("mystery breakfast")).toBe("🍽️");
+  });
+});
+
+describe("isLikelySingleFoodImage", () => {
+  it("rejects store and display images", () => {
+    expect(
+      isLikelySingleFoodImage(
+        "bagel",
+        "Bagel shop display",
+        "https://example.com/bagel-shop-display.jpg"
+      )
+    ).toBe(false);
+  });
+
+  it("rejects plural bagel and mango images when a single item is requested", () => {
+    expect(
+      isLikelySingleFoodImage(
+        "bagel",
+        "Fresh bagels",
+        "https://example.com/fresh-bagels.jpg"
+      )
+    ).toBe(false);
+    expect(
+      isLikelySingleFoodImage(
+        "mango",
+        "Mangoes in a basket",
+        "https://example.com/mangoes.jpg"
+      )
+    ).toBe(false);
+  });
+
+  it("allows a simple single food image", () => {
+    expect(
+      isLikelySingleFoodImage(
+        "bagel",
+        "Plain bagel",
+        "https://example.com/plain-bagel.jpg"
+      )
+    ).toBe(true);
   });
 });

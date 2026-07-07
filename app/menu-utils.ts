@@ -19,6 +19,44 @@ export const DEFAULT_RECENTS = [
   "yogurt"
 ];
 
+const FOOD_SEARCH_NAMES: Record<string, string> = {
+  apples: "apple",
+  bagels: "bagel",
+  eggs: "egg",
+  mangoes: "mango",
+  omelettes: "omelet",
+  pancakes: "pancake",
+  waffles: "waffle"
+};
+
+const GROUP_IMAGE_WORDS = [
+  "aisle",
+  "assorted",
+  "bakery",
+  "basket",
+  "boxes",
+  "buffet",
+  "bunch",
+  "counter",
+  "crate",
+  "display",
+  "factory",
+  "group",
+  "many",
+  "market",
+  "pile",
+  "platter",
+  "restaurant",
+  "selection",
+  "shelf",
+  "shelves",
+  "shop",
+  "store",
+  "stall",
+  "tray",
+  "vendor"
+];
+
 const FOOD_EMOJIS: Record<string, string> = {
   apple: "🍎",
   apples: "🍎",
@@ -64,16 +102,21 @@ export function parseFoods(input: string) {
 
 export function getSearchTerm(foodName: string) {
   const normalized = normalizeFoodName(foodName);
+  const searchName = FOOD_SEARCH_NAMES[normalized] ?? normalized;
 
   if (normalized === "cheerios") {
-    return "cereal bowl food";
+    return "cereal bowl close up food";
   }
 
   if (normalized === "apple" || normalized === "apples") {
-    return "apple fruit food";
+    return "single apple fruit food";
   }
 
-  return `${normalized} food`;
+  if (normalized === "mango" || normalized === "mangoes") {
+    return "single mango fruit food";
+  }
+
+  return `single ${searchName} food`;
 }
 
 export function getFallbackEmoji(foodName: string) {
@@ -139,4 +182,43 @@ export function getNextImageUrl(
       (url) => url !== cached?.currentUrl && !usedUrls.includes(url)
     ) ?? null
   );
+}
+
+export function isLikelySingleFoodImage(
+  foodName: string,
+  imageTitle: string,
+  imageUrl: string
+) {
+  const normalizedFood = normalizeFoodName(foodName);
+
+  if (normalizedFood === "cheerios") {
+    return true;
+  }
+
+  const searchName = FOOD_SEARCH_NAMES[normalizedFood] ?? normalizedFood;
+  const searchableText = decodeURIComponent(`${imageTitle} ${imageUrl}`)
+    .toLowerCase()
+    .replace(/[_-]+/g, " ");
+
+  if (GROUP_IMAGE_WORDS.some((word) => searchableText.includes(word))) {
+    return false;
+  }
+
+  if (
+    searchName === "bagel" &&
+    /\bbagels\b/.test(searchableText) &&
+    !/\bbagel\b/.test(searchableText.replace(/\bbagels\b/g, ""))
+  ) {
+    return false;
+  }
+
+  if (
+    searchName === "mango" &&
+    /\b(mangos|mangoes)\b/.test(searchableText) &&
+    !/\bmango\b/.test(searchableText.replace(/\b(mangos|mangoes)\b/g, ""))
+  ) {
+    return false;
+  }
+
+  return true;
 }

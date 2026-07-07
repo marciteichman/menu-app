@@ -7,6 +7,7 @@ import {
   getFallbackEmoji,
   getNextImageUrl,
   getSearchTerm,
+  isLikelySingleFoodImage,
   mergeRecentFoods,
   normalizeFoodName,
   parseFoods,
@@ -23,7 +24,7 @@ type FoodCard = {
   status: ImageStatus;
 };
 
-const IMAGE_CACHE_KEY = "breakfast-menu-image-cache";
+const IMAGE_CACHE_KEY = "breakfast-menu-image-cache-v2";
 const RECENT_FOODS_KEY = "breakfast-menu-recent-foods";
 
 function createFoodCard(name: string): FoodCard {
@@ -35,6 +36,12 @@ function createFoodCard(name: string): FoodCard {
     status: "idle"
   };
 }
+
+type WikimediaImageResult = {
+  title: string;
+  url: string;
+  mime: string | undefined;
+};
 
 async function searchWikimediaImages(foodName: string) {
   const params = new URLSearchParams({
@@ -63,6 +70,7 @@ async function searchWikimediaImages(foodName: string) {
       pages?: Record<
         string,
         {
+          title?: string;
           imageinfo?: Array<{
             mime?: string;
             thumburl?: string;
@@ -74,10 +82,22 @@ async function searchWikimediaImages(foodName: string) {
   };
 
   return Object.values(data.query?.pages ?? {})
-    .flatMap((page) => page.imageinfo ?? [])
+    .flatMap((page) =>
+      (page.imageinfo ?? []).map((image) => ({
+        title: page.title ?? "",
+        url: image.thumburl ?? image.url,
+        mime: image.mime
+      }))
+    )
     .filter((image) => image.mime?.startsWith("image/"))
-    .map((image) => image.thumburl ?? image.url)
-    .filter((url): url is string => Boolean(url))
+    .filter(
+      (image): image is WikimediaImageResult =>
+        Boolean(image.url)
+    )
+    .filter((image) =>
+      isLikelySingleFoodImage(foodName, image.title, image.url)
+    )
+    .map((image) => image.url)
     .filter((url) => !url.toLowerCase().endsWith(".svg"))
     .filter((url, index, urls) => urls.indexOf(url) === index);
 }
