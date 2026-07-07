@@ -27,3 +27,13 @@ http://localhost:3000
 ## Notes
 
 Images are searched from Wikimedia Commons in the browser. The app stores selected image URLs and recent foods locally in your browser only. No database, authentication, or paid image generation is used.
+
+## Checks
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+`npm test` checks the menu behavior, `npm run lint` checks TypeScript, and `npm run build` verifies the production app.

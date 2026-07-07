@@ -1,6 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  DEFAULT_RECENTS,
+  FoodImageCache,
+  getFallbackEmoji,
+  getNextImageUrl,
+  getSearchTerm,
+  mergeRecentFoods,
+  normalizeFoodName,
+  parseFoods,
+  shuffleItems
+} from "./menu-utils";
 
 type ImageStatus = "idle" | "loading" | "ready" | "fallback" | "error";
 
@@ -12,71 +23,8 @@ type FoodCard = {
   status: ImageStatus;
 };
 
-type FoodImageCache = Record<
-  string,
-  {
-    results: string[];
-    usedUrls: string[];
-    currentUrl: string | null;
-  }
->;
-
 const IMAGE_CACHE_KEY = "breakfast-menu-image-cache";
 const RECENT_FOODS_KEY = "breakfast-menu-recent-foods";
-const MAX_RECENT_FOODS = 14;
-
-const DEFAULT_RECENTS = [
-  "Cheerios",
-  "mango",
-  "apples",
-  "omelet",
-  "pancakes",
-  "bagel",
-  "yogurt"
-];
-
-const FOOD_EMOJIS: Record<string, string> = {
-  apple: "🍎",
-  apples: "🍎",
-  bagel: "🥯",
-  banana: "🍌",
-  cereal: "🥣",
-  cheerios: "🥣",
-  egg: "🥚",
-  eggs: "🥚",
-  mango: "🥭",
-  omelet: "🍳",
-  omelette: "🍳",
-  pancake: "🥞",
-  pancakes: "🥞",
-  toast: "🍞",
-  waffle: "🧇",
-  waffles: "🧇",
-  yogurt: "🥣"
-};
-
-function normalizeFoodName(name: string) {
-  return name.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-function parseFoods(input: string) {
-  const seen = new Set<string>();
-
-  return input
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .filter((item) => {
-      const normalized = normalizeFoodName(item);
-
-      if (seen.has(normalized)) {
-        return false;
-      }
-
-      seen.add(normalized);
-      return true;
-    });
-}
 
 function createFoodCard(name: string): FoodCard {
   return {
@@ -86,20 +34,6 @@ function createFoodCard(name: string): FoodCard {
     imageUrl: null,
     status: "idle"
   };
-}
-
-function getSearchTerm(foodName: string) {
-  const normalized = normalizeFoodName(foodName);
-
-  if (normalized === "cheerios") {
-    return "cereal bowl food";
-  }
-
-  if (normalized === "apple" || normalized === "apples") {
-    return "apple fruit food";
-  }
-
-  return `${normalized} food`;
 }
 
 async function searchWikimediaImages(foodName: string) {
@@ -167,71 +101,6 @@ function writeJson<T>(key: string, value: T) {
   } catch {
     // Storage can be disabled in private or restricted browser contexts.
   }
-}
-
-function getFallbackEmoji(foodName: string) {
-  const normalized = normalizeFoodName(foodName);
-  const directMatch = FOOD_EMOJIS[normalized];
-
-  if (directMatch) {
-    return directMatch;
-  }
-
-  const partialMatch = Object.keys(FOOD_EMOJIS).find((key) =>
-    normalized.includes(key)
-  );
-
-  return partialMatch ? FOOD_EMOJIS[partialMatch] : "🍽️";
-}
-
-function shuffleItems<T>(items: T[]) {
-  const shuffled = [...items];
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[randomIndex]] = [
-      shuffled[randomIndex],
-      shuffled[index]
-    ];
-  }
-
-  return shuffled;
-}
-
-function mergeRecentFoods(current: string[], nextFoods: string[]) {
-  return [
-    ...nextFoods,
-    ...current.filter(
-      (food) =>
-        !nextFoods.some(
-          (nextFood) =>
-            normalizeFoodName(nextFood) === normalizeFoodName(food)
-        )
-    )
-  ].slice(0, MAX_RECENT_FOODS);
-}
-
-function getNextImageUrl(
-  results: string[],
-  cached:
-    | {
-        usedUrls: string[];
-        currentUrl: string | null;
-      }
-    | undefined,
-  forceDifferent: boolean
-) {
-  if (!forceDifferent && cached?.currentUrl && results.includes(cached.currentUrl)) {
-    return cached.currentUrl;
-  }
-
-  const usedUrls = forceDifferent ? cached?.usedUrls ?? [] : [];
-
-  return (
-    results.find(
-      (url) => url !== cached?.currentUrl && !usedUrls.includes(url)
-    ) ?? null
-  );
 }
 
 export default function BreakfastMenuApp() {

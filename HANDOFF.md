@@ -28,6 +28,8 @@ Files currently present:
 - `README.md`
 - `app/layout.tsx`
 - `app/page.tsx`
+- `app/menu-utils.ts`
+- `app/menu-utils.test.ts`
 - `app/globals.css`
 - `node_modules/`
 - `.next/` from the successful production build
@@ -81,13 +83,12 @@ The code is organized into these in-file components/helpers:
 - `FoodGrid`
 - `FoodCardView`
 - `EmptyMenu`
+
+Shared menu helper behavior now lives in `app/menu-utils.ts` and is covered by `app/menu-utils.test.ts`:
+
 - `normalizeFoodName`
 - `parseFoods`
-- `createFoodCard`
 - `getSearchTerm`
-- `searchWikimediaImages`
-- `readJson`
-- `writeJson`
 - `getFallbackEmoji`
 - `shuffleItems`
 - `mergeRecentFoods`
@@ -130,9 +131,25 @@ Current `package.json` dependencies at time of handoff:
 }
 ```
 
-Production build was run and passed:
+Test/check scripts:
 
 ```bash
+npm test
+npm run lint
+npm run build
+```
+
+Current behavior:
+
+- `npm test` runs Vitest helper tests.
+- `npm run lint` runs `tsc --noEmit`.
+- `npm run build` runs the Next.js production build.
+
+All three were run and passed after adding tests:
+
+```bash
+npm test
+npm run lint
 npm run build
 ```
 
@@ -150,35 +167,39 @@ During build, Next updated `tsconfig.json` automatically:
 
 Those changes were left in place.
 
+Audit note:
+
+```bash
+npm audit --omit=dev
+```
+
+The audit currently reports two moderate issues through Next.js' `postcss` dependency. The installed Next.js version is already the latest stable (`npm view next version` returned `16.2.10`). `npm audit fix --force` suggests downgrading Next to `9.3.3`, so do not apply that forced fix. Re-check after a newer stable Next.js release is available.
+
 ## Dev Server Status
 
-Attempted:
+The dev server requires approval/escalation in this environment because sandboxed port binding fails with:
 
 ```bash
 npm run dev
 ```
-
-Inside sandbox, it failed with:
 
 ```text
 Error: listen EPERM: operation not permitted 0.0.0.0:3000
 ```
 
-This appears to be sandbox restriction on binding a local port, not an app compile error.
+In this session, the escalated dev server started successfully and responded with HTTP 200 at:
 
-An escalated attempt to run the dev server was started but the user interrupted it and asked to stop and create this handoff file. Do not assume the dev server is currently running. In a new session, check before starting:
+```text
+http://localhost:3000
+```
+
+Before starting a future dev server, check:
 
 ```bash
 lsof -i :3000
 ```
 
-If clear, run:
-
-```bash
-npm run dev
-```
-
-If sandbox blocks binding again, request approval to run `npm run dev`.
+If clear, run `npm run dev`. If sandbox blocks binding again, request approval to run it.
 
 ## Git / GitHub Versioning
 
