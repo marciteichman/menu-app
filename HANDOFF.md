@@ -149,7 +149,7 @@ Current behavior:
 - `npm run lint` runs `tsc --noEmit`.
 - `npm run build` runs the Next.js production build.
 
-All three were run and passed after adding tests:
+All three were run and passed after adding the helper tests and again after adding the single-food image rules:
 
 ```bash
 npm test
@@ -255,6 +255,9 @@ Because of the auto-push hook, the commit should push to GitHub by itself.
 Recent commits:
 
 ```text
+233a61b Prefer single food images
+4c87a83 Add menu utility tests and checks
+44ab2f4 Update handoff with GitHub workflow
 7ce3454 Add auto-push Git hook
 6707fb4 Initial commit
 ```
